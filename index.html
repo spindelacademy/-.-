@@ -370,7 +370,26 @@
 
 </div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getFirestore, collection, doc, setDoc, getDoc, getDocs, deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+/* ====== 여기에 Firebase 콘솔에서 복사한 firebaseConfig 값을 붙여넣으세요 ====== */
+const firebaseConfig = {
+  apiKey: "AIzaSyDWZZ6nRE4kMvH_2WrGq6U4BKF99ToAAWY",
+  authDomain: "project-4966668896523357297.firebaseapp.com",
+  projectId: "project-4966668896523357297",
+  storageBucket: "project-4966668896523357297.firebasestorage.app",
+  messagingSenderId: "70275867723",
+  appId: "1:70275867723:web:ffff595e30956c700199ce"
+};
+/* ============================================================ */
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
+
 (function(){
 
   const ELEMENTS = [
@@ -394,8 +413,6 @@
     dark: {10:10}
   };
 
-  const STORAGE_PREFIX = 'trial_tower_player:';
-  const ARTIFACT_PREFIX = 'trial_tower_artifact:';
   const DEFAULT_MAX_HP = 100;
   const INVENTORY_MAX = 10;
 
@@ -452,54 +469,42 @@
     }).filter(Boolean).join('') || '<span class="badge dim">능력치 없음</span>';
   }
 
-  /* ---------- storage ---------- */
+  /* ---------- storage (Firebase Firestore) ---------- */
 
   async function savePlayer(player){
     try{
-      const res = await window.storage.set(STORAGE_PREFIX + player.id, JSON.stringify(player), true);
-      return !!res;
-    }catch(e){ return false; }
+      await setDoc(doc(db, 'players', player.id), player);
+      return true;
+    }catch(e){ console.error('savePlayer 실패:', e); return false; }
   }
   async function loadAllPlayers(){
     try{
-      const list = await window.storage.list(STORAGE_PREFIX, true);
-      if(!list || !list.keys) return [];
+      const snap = await getDocs(collection(db, 'players'));
       const players = [];
-      for(const k of list.keys){
-        try{
-          const r = await window.storage.get(k, true);
-          if(r) players.push(JSON.parse(r.value));
-        }catch(e){}
-      }
+      snap.forEach(function(d){ players.push(d.data()); });
       return players;
-    }catch(e){ return []; }
+    }catch(e){ console.error('loadAllPlayers 실패:', e); return []; }
   }
   async function deletePlayerFromStorage(id){
-    try{ await window.storage.delete(STORAGE_PREFIX + id, true); }catch(e){}
+    try{ await deleteDoc(doc(db, 'players', id)); }catch(e){ console.error('deletePlayer 실패:', e); }
   }
 
   async function saveArtifact(artifact){
     try{
-      const res = await window.storage.set(ARTIFACT_PREFIX + artifact.id, JSON.stringify(artifact), true);
-      return !!res;
-    }catch(e){ return false; }
+      await setDoc(doc(db, 'artifacts', artifact.id), artifact);
+      return true;
+    }catch(e){ console.error('saveArtifact 실패:', e); return false; }
   }
   async function loadAllArtifacts(){
     try{
-      const list = await window.storage.list(ARTIFACT_PREFIX, true);
-      if(!list || !list.keys) return [];
+      const snap = await getDocs(collection(db, 'artifacts'));
       const artifacts = [];
-      for(const k of list.keys){
-        try{
-          const r = await window.storage.get(k, true);
-          if(r) artifacts.push(JSON.parse(r.value));
-        }catch(e){}
-      }
+      snap.forEach(function(d){ artifacts.push(d.data()); });
       return artifacts;
-    }catch(e){ return []; }
+    }catch(e){ console.error('loadAllArtifacts 실패:', e); return []; }
   }
   async function deleteArtifactFromStorage(id){
-    try{ await window.storage.delete(ARTIFACT_PREFIX + id, true); }catch(e){}
+    try{ await deleteDoc(doc(db, 'artifacts', id)); }catch(e){ console.error('deleteArtifact 실패:', e); }
   }
 
   /* ---------- nav ---------- */
