@@ -145,11 +145,11 @@
     padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;
     text-align:center;
   }
-  .sheet-portrait-box{flex:1 1 150px;gap:10px;}
-  .sheet-vitals-box{flex:2 1 220px;flex-direction:row;justify-content:space-around;gap:18px;}
-  .vitals-col{display:flex;flex-direction:column;align-items:center;}
+  .sheet-portrait-box{flex:1.6 1 190px;gap:12px;}
+  .sheet-vitals-box{flex:1 1 150px;flex-direction:column;gap:16px;}
+  .vitals-row{display:flex;flex-direction:column;align-items:center;width:100%;}
   .portrait-frame{
-    width:92px;height:92px;border-radius:50%;
+    width:128px;height:128px;border-radius:18px;
     border:3px solid var(--accent);
     background:var(--panel2);
     display:flex;align-items:center;justify-content:center;
@@ -158,38 +158,34 @@
     position:relative;
   }
   .portrait-frame:hover::after{
-    content:'변경';font-size:11px;color:#fff;
+    content:'변경';font-size:12px;color:#fff;
     position:absolute;inset:0;background:rgba(0,0,0,.45);
     display:flex;align-items:center;justify-content:center;
   }
   .portrait-frame img{width:100%;height:100%;object-fit:cover;}
-  .portrait-placeholder{font-family:'Cinzel',serif;font-size:32px;color:var(--accent);}
-  .char-sheet-name{font-size:19px;color:var(--accent);}
-  .sheet-box-label{font-size:14px;font-weight:600;color:var(--text-dim);letter-spacing:.03em;margin-bottom:9px;}
+  .portrait-placeholder{font-family:'Cinzel',serif;font-size:44px;color:var(--accent);}
+  .char-sheet-name{font-family:'Cinzel',serif;font-size:20px;color:var(--accent);}
+  .sheet-box-label{
+    font-family:'Cinzel',serif;font-size:15px;font-weight:700;color:var(--text-dim);
+    letter-spacing:.06em;text-transform:uppercase;margin-bottom:9px;
+  }
   .hp-visual{display:flex;align-items:center;gap:12px;}
-  .hp-visual-bar{width:10px;height:56px;background:var(--bg);border-radius:5px;overflow:hidden;display:flex;align-items:flex-end;border:1px solid var(--border);}
+  .hp-visual-bar{width:10px;height:44px;background:var(--bg);border-radius:5px;overflow:hidden;display:flex;align-items:flex-end;border:1px solid var(--border);}
   .hp-visual-fill{width:100%;background:linear-gradient(180deg,#e2564f,#8a3f3f);border-radius:4px;transition:height .3s;}
-  .sheet-box-value{font-size:28px;font-weight:700;color:var(--text);font-family:'Cinzel',serif;}
+  .sheet-box-value{font-size:26px;font-weight:700;color:var(--text);font-family:'Cinzel',serif;}
   .help-dots-row{display:flex;gap:7px;margin-bottom:8px;}
   .help-dot{width:14px;height:14px;border-radius:50%;display:inline-block;border:1.5px solid var(--accent);}
   .help-dot.filled{background:var(--accent);}
 
-  .stat-accordion-item{border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden;background:var(--panel2);}
-  .stat-accordion-header{
-    width:100%;background:none;border:none;border-left:4px solid var(--el-color);
-    border-radius:0;padding:14px;display:flex;align-items:center;justify-content:space-between;
-    cursor:pointer;color:var(--text);
+  .element-icon-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  @media(max-width:420px){.element-icon-grid{grid-template-columns:repeat(2,1fr);}}
+  .element-icon-tile{
+    border:1px solid var(--border);border-top:3px solid var(--el-color);border-radius:10px;
+    padding:14px 8px 12px;text-align:center;background:var(--panel2);
   }
-  .stat-accordion-header:hover{color:var(--text);border-color:var(--el-color);}
-  .stat-accordion-name{
-    font-family:'Cinzel',serif;font-weight:700;font-size:17px;letter-spacing:.02em;color:var(--el-color);
-  }
-  .stat-accordion-meta{font-size:22px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:14px;font-family:'Cinzel',serif;}
-  .stat-accordion-meta .stat-accordion-level{font-size:14px;color:var(--text-dim);font-family:'Inter',sans-serif;font-weight:600;}
-  .stat-accordion-chevron{transition:transform .2s;color:var(--text-mute);font-size:12px;font-family:'Inter',sans-serif;}
-  .stat-accordion-item.open .stat-accordion-chevron{transform:rotate(180deg);}
-  .stat-accordion-body{max-height:0;overflow:hidden;transition:max-height .25s ease;padding:0 14px;}
-  .stat-accordion-item.open .stat-accordion-body{padding:2px 14px 14px;}
+  .element-icon-tile .element-icon{font-size:22px;margin-bottom:8px;filter:grayscale(.15);}
+  .element-icon-tile .element-value{font-size:26px;font-weight:700;color:var(--text);font-family:'Cinzel',serif;}
+  .element-icon-tile .element-name{font-size:11px;color:var(--text-dim);margin-top:4px;}
 
   .item-slot[draggable="true"]{cursor:grab;}
   .item-slot[draggable="true"]:active{cursor:grabbing;}
@@ -214,13 +210,15 @@
   .drop-chip .chip-remove:hover{color:var(--danger);}
   .drag-ghost{position:fixed;pointer-events:none;z-index:9999;opacity:.85;}
 
-  .skill-row{display:grid;grid-template-columns:60px 1fr;gap:14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+  .skill-row{display:grid;grid-template-columns:72px 1fr;gap:14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
   .skill-row:last-child{border-bottom:none;}
   .skill-level-tag{
-    font-weight:700;font-size:13px;color:var(--el-color);border:1px solid var(--el-color);
-    border-radius:6px;padding:5px 0;text-align:center;white-space:nowrap;
+    font-weight:700;font-size:11.5px;line-height:1.4;color:var(--el-color);border:1px solid var(--el-color);
+    border-radius:6px;padding:5px 2px;text-align:center;white-space:nowrap;
   }
   .skill-desc{font-size:13px;color:var(--text-dim);line-height:1.55;margin:0;}
+  #pc-level-row{margin-bottom:.85rem;}
+  #pc-skills-list{margin-bottom:1rem;}
 
   #battle-active{display:none;}
   .status-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-bottom:1rem;}
@@ -478,29 +476,31 @@
         <h1 class="char-sheet-name" id="pc-name"></h1>
       </div>
       <div class="sheet-box sheet-vitals-box">
-        <div class="vitals-col">
+        <div class="vitals-row">
           <div class="sheet-box-label">체력</div>
           <div class="hp-visual">
             <div class="hp-visual-bar"><div class="hp-visual-fill" id="pc-hp-fill"></div></div>
             <div class="sheet-box-value" id="pc-hp-text"></div>
           </div>
         </div>
-        <div class="vitals-col">
+        <div class="vitals-row">
           <div class="sheet-box-label">구조 요청</div>
           <div class="help-dots-row" id="pc-help-dots"></div>
-          <div class="sheet-box-value" id="pc-help-text" style="font-size:20px;"></div>
+          <div class="sheet-box-value" id="pc-help-text" style="font-size:18px;"></div>
         </div>
       </div>
     </div>
     <p class="footnote" id="portrait-status" style="margin:-6px 0 1rem;"></p>
 
     <div class="panel">
-      <div class="panel-head"><h3>능력치 &amp; 스킬</h3></div>
-      <div id="pc-stat-accordion"></div>
+      <div class="panel-head"><h3>능력치</h3></div>
+      <div class="element-icon-grid" id="pc-element-grid"></div>
     </div>
 
     <div class="panel">
-      <h3 style="margin-bottom:.5rem;">보유 아티팩트</h3>
+      <h3 style="margin-bottom:.75rem;">보유 아티팩트</h3>
+      <div class="badges" id="pc-level-row"></div>
+      <div id="pc-skills-list"></div>
       <p class="footnote" style="margin-bottom:.6rem;">아티팩트를 아래 양도 칸으로 끌어다 놓으세요. 여러 개를 한 번에 놓을 수 있어요.</p>
       <div class="item-slots" id="pc-slots"></div>
     </div>
@@ -542,12 +542,12 @@ const db = getFirestore(firebaseApp);
 (function(){
 
   const ELEMENTS = [
-    {key:'physical', name:'물리', color:'var(--physical)'},
-    {key:'fire', name:'화염', color:'var(--fire)'},
-    {key:'frost', name:'빙결', color:'var(--frost)'},
-    {key:'lightning', name:'전격', color:'var(--lightning)'},
-    {key:'storm', name:'폭풍', color:'var(--storm)'},
-    {key:'dark', name:'암흑', color:'var(--dark)'}
+    {key:'physical', name:'물리', color:'var(--physical)', icon:'\u2694\ufe0f'},
+    {key:'fire', name:'화염', color:'var(--fire)', icon:'\ud83d\udd25'},
+    {key:'frost', name:'빙결', color:'var(--frost)', icon:'\u2744\ufe0f'},
+    {key:'lightning', name:'전격', color:'var(--lightning)', icon:'\u26a1'},
+    {key:'storm', name:'폭풍', color:'var(--storm)', icon:'\ud83c\udf2a\ufe0f'},
+    {key:'dark', name:'암흑', color:'var(--dark)', icon:'\u25fc\ufe0f'}
   ];
   const ELEMENT_NAME = {};
   const ELEMENT_COLOR = {};
@@ -1753,7 +1753,6 @@ const db = getFirestore(firebaseApp);
   let pendingPortraitDataUrl = null;
   let dragState = null;
   let stagedTransferItemIds = [];
-  let accordionOverrides = {};
 
   function renderPortalChar(){
     const p = currentPortalPlayer();
@@ -1786,36 +1785,34 @@ const db = getFirestore(firebaseApp);
     $('pc-help-dots').innerHTML = dots.join('');
     $('pc-help-text').textContent = helpLeft+' / 2';
 
-    $('pc-stat-accordion').innerHTML = ELEMENTS.map(function(el){
+    $('pc-element-grid').innerHTML = ELEMENTS.map(function(el){
       const stat = computeStat(p, el.key);
+      return '<div class="element-icon-tile" style="--el-color:'+el.color+'">' +
+        '<div class="element-icon">'+el.icon+'</div>' +
+        '<div class="element-value">'+stat+'</div>' +
+        '<div class="element-name">'+el.name+'</div>' +
+      '</div>';
+    }).join('');
+
+    $('pc-level-row').innerHTML = ELEMENTS.map(function(el){
       const lvl = levelOf(p, el.key);
-      let body = '';
+      const dim = lvl === 0 ? ' dim' : '';
+      return '<span class="badge'+dim+'" style="--el-color:'+el.color+'">'+el.name+' Lv.'+lvl+'</span>';
+    }).join('');
+
+    let skillsHtml = '';
+    ELEMENTS.forEach(function(el){
+      const lvl = levelOf(p, el.key);
       [3,6,10].forEach(function(threshold){
         if(lvl >= threshold && SKILL_TEXT[el.key][threshold]){
-          body += '<div class="skill-row">' +
-            '<span class="skill-level-tag" style="--el-color:'+el.color+'">Lv.'+threshold+'</span>' +
+          skillsHtml += '<div class="skill-row">' +
+            '<span class="skill-level-tag" style="--el-color:'+el.color+'">'+el.name+'<br>Lv.'+threshold+'</span>' +
             '<p class="skill-desc">'+SKILL_TEXT[el.key][threshold]+'</p>' +
             '</div>';
         }
       });
-      const hasSkills = body.length > 0;
-      if(!body) body = '<p class="empty-note">아직 해금된 스킬이 없습니다.</p>';
-      const defaultOpen = hasSkills;
-      const isOpen = accordionOverrides[el.key] !== undefined ? accordionOverrides[el.key] : defaultOpen;
-      return '<div class="stat-accordion-item'+(isOpen?' open':'')+'" data-el-key="'+el.key+'">' +
-        '<button class="stat-accordion-header" style="--el-color:'+el.color+'">' +
-          '<span class="stat-accordion-name">'+el.name+'</span>' +
-          '<span class="stat-accordion-meta"><span>'+stat+'</span><span class="stat-accordion-level">Lv.'+lvl+'</span><span class="stat-accordion-chevron">\u25be</span></span>' +
-        '</button>' +
-        '<div class="stat-accordion-body">'+body+'</div>' +
-      '</div>';
-    }).join('');
-    document.querySelectorAll('.stat-accordion-item').forEach(function(item){
-      const body = item.querySelector('.stat-accordion-body');
-      if(item.classList.contains('open')){
-        body.style.maxHeight = body.scrollHeight+'px';
-      }
     });
+    $('pc-skills-list').innerHTML = skillsHtml || '<p class="empty-note" style="margin-bottom:.6rem;">아직 해금된 스킬이 없습니다.</p>';
 
     stagedTransferItemIds = stagedTransferItemIds.filter(function(id){
       return p.inventory.some(function(i){ return i.id === id; });
@@ -1845,26 +1842,6 @@ const db = getFirestore(firebaseApp);
     $('portrait-status').textContent = '';
     renderDropzoneChips();
   }
-
-  /* ---- stat/skill accordion ---- */
-
-  $('pc-stat-accordion').addEventListener('click', function(e){
-    const header = e.target.closest('.stat-accordion-header');
-    if(!header) return;
-    const item = header.closest('.stat-accordion-item');
-    const key = item.getAttribute('data-el-key');
-    const body = item.querySelector('.stat-accordion-body');
-    const isOpen = item.classList.contains('open');
-    if(isOpen){
-      item.classList.remove('open');
-      body.style.maxHeight = '0px';
-      accordionOverrides[key] = false;
-    } else {
-      item.classList.add('open');
-      body.style.maxHeight = body.scrollHeight+'px';
-      accordionOverrides[key] = true;
-    }
-  });
 
   /* ---- drag & drop / touch transfer (multi-item staging) ---- */
 
