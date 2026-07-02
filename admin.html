@@ -1801,7 +1801,7 @@ const db = getFirestore(firebaseApp);
 
   $('btn-open-portal').addEventListener('click', function(){
     const base = window.location.href.replace(/[^/]*$/, '');
-    window.open(base + 'portal.html', '_blank');
+    window.open(base, '_blank');
   });
 
   let alreadyUnlocked = false;
