@@ -419,9 +419,34 @@
     </div>
     <div class="panel">
       <div class="panel-head"><h2>등록된 아이템</h2><button id="btn-refresh-items">새로고침</button></div>
-      <p class="footnote" style="margin-bottom:.6rem;">이 목록도 공유 저장소에 보관됩니다. 삭제하면 이미 지급된 아이템도 모든 캐릭터의 아이템 칸에서 함께 삭제됩니다. 조합 레시피는 추후 별도로 추가됩니다.</p>
+      <p class="footnote" style="margin-bottom:.6rem;">이 목록도 공유 저장소에 보관됩니다. 삭제하면 이미 지급된 아이템도 모든 캐릭터의 아이템 칸에서 함께 삭제됩니다.</p>
       <input type="text" id="item-search" placeholder="아이템 이름 검색" style="margin-bottom:.75rem;">
       <div id="item-catalog-list"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>조합 레시피 등록</h2></div>
+      <div class="form-row" style="grid-template-columns:1fr 1fr 1fr;">
+        <div>
+          <label>재료 1</label>
+          <select id="recipe-item-a"></select>
+        </div>
+        <div>
+          <label>재료 2</label>
+          <select id="recipe-item-b"></select>
+        </div>
+        <div>
+          <label>결과물</label>
+          <select id="recipe-result"></select>
+        </div>
+      </div>
+      <button class="primary wide" id="btn-save-recipe" style="margin-top:.75rem;">레시피 등록</button>
+      <p class="footnote" id="recipe-save-status" style="margin-top:.5rem;"></p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>등록된 레시피</h2><button id="btn-refresh-recipes">새로고침</button></div>
+      <div id="recipe-list"></div>
     </div>
   </div>
 
@@ -735,6 +760,24 @@ const db = getFirestore(firebaseApp);
     try{ await deleteDoc(doc(db, 'items', id)); }catch(e){ console.error('deleteItemCatalog 실패:', e); }
   }
 
+  async function saveRecipe(recipe){
+    try{
+      await setDoc(doc(db, 'recipes', recipe.id), recipe);
+      return true;
+    }catch(e){ console.error('saveRecipe 실패:', e); return false; }
+  }
+  async function loadAllRecipes(){
+    try{
+      const snap = await getDocs(collection(db, 'recipes'));
+      const recipes = [];
+      snap.forEach(function(d){ recipes.push(d.data()); });
+      return recipes;
+    }catch(e){ console.error('loadAllRecipes 실패:', e); return []; }
+  }
+  async function deleteRecipeFromStorage(id){
+    try{ await deleteDoc(doc(db, 'recipes', id)); }catch(e){ console.error('deleteRecipe 실패:', e); }
+  }
+
   /* ---------- nav ---------- */
 
   document.querySelectorAll('.nav button').forEach(function(btn){
@@ -744,7 +787,7 @@ const db = getFirestore(firebaseApp);
       btn.classList.add('active');
       $(btn.getAttribute('data-tab')).classList.add('active');
       if(btn.getAttribute('data-tab') === 'tab-artifacts') refreshArtifactList();
-      if(btn.getAttribute('data-tab') === 'tab-items') refreshItemCatalogList();
+      if(btn.getAttribute('data-tab') === 'tab-items'){ refreshItemCatalogList(); refreshRecipeList(); }
       if(btn.getAttribute('data-tab') === 'tab-inventory') refreshInventoryTab();
       if(btn.getAttribute('data-tab') === 'tab-battle') refreshPartyTab();
     });
@@ -1096,16 +1139,17 @@ const db = getFirestore(firebaseApp);
       const target = players.find(function(x){ return x.id === targetId; });
       if(!target){ statusEl.textContent = '캐릭터를 찾을 수 없습니다.'; return; }
       if(!target.items) target.items = [];
-      if(target.items.length >= INVENTORY_MAX){
-        statusEl.textContent = target.name+'의 아이템 칸이 가득 찼습니다.';
-        return;
+      const existing = target.items.find(function(i){ return i.sourceItemId === it.id; });
+      if(existing){
+        existing.quantity = (existing.quantity||1) + 1;
+      } else {
+        target.items.push({
+          sourceItemId: it.id,
+          name: it.name,
+          description: it.description || '',
+          quantity: 1
+        });
       }
-      target.items.push({
-        id: 'item_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
-        name: it.name,
-        description: it.description || '',
-        sourceItemId: it.id
-      });
       await savePlayer(target);
       statusEl.textContent = '"'+it.name+'"을(를) '+target.name+'에게 지급했습니다.';
       $('item-grant-row-'+confirmGrantId).style.display = 'none';
@@ -1156,6 +1200,79 @@ const db = getFirestore(firebaseApp);
       cancelItemCatalogEdit();
       refreshItemCatalogList();
     }
+  });
+
+  /* ============ 조합 레시피 관리 ============ */
+
+  let recipesCache = [];
+
+  function populateRecipeSelects(){
+    const options = '<option value="">선택하세요</option>' +
+      itemCatalogCache.map(function(it){ return '<option value="'+it.id+'">'+it.name+'</option>'; }).join('');
+    $('recipe-item-a').innerHTML = options;
+    $('recipe-item-b').innerHTML = options;
+    $('recipe-result').innerHTML = options;
+  }
+
+  async function refreshRecipeList(){
+    itemCatalogCache = await loadAllItemCatalog();
+    recipesCache = await loadAllRecipes();
+    populateRecipeSelects();
+    renderRecipeList();
+  }
+
+  $('btn-refresh-recipes').addEventListener('click', refreshRecipeList);
+
+  function itemCatalogName(id){
+    const it = itemCatalogCache.find(function(x){ return x.id === id; });
+    return it ? it.name : '(삭제된 아이템)';
+  }
+
+  function renderRecipeList(){
+    const wrap = $('recipe-list');
+    wrap.innerHTML = '';
+    if(recipesCache.length === 0){
+      wrap.innerHTML = '<p class="empty-note">등록된 레시피가 없습니다.</p>';
+      return;
+    }
+    recipesCache.forEach(function(r){
+      const row = document.createElement('div');
+      row.className = 'char-row';
+      row.innerHTML =
+        '<span class="char-name">'+itemCatalogName(r.itemAId)+' + '+itemCatalogName(r.itemBId)+' \u2192 '+itemCatalogName(r.resultItemId)+'</span>' +
+        '<div class="row"><button data-del-recipe="'+r.id+'">삭제</button></div>';
+      wrap.appendChild(row);
+    });
+  }
+
+  $('recipe-list').addEventListener('click', async function(e){
+    const delId = e.target.getAttribute('data-del-recipe');
+    if(!delId) return;
+    await deleteRecipeFromStorage(delId);
+    refreshRecipeList();
+  });
+
+  $('btn-save-recipe').addEventListener('click', async function(){
+    const itemAId = $('recipe-item-a').value;
+    const itemBId = $('recipe-item-b').value;
+    const resultItemId = $('recipe-result').value;
+    if(!itemAId || !itemBId || !resultItemId){
+      $('recipe-save-status').textContent = '재료 1, 재료 2, 결과물을 모두 선택하세요.';
+      return;
+    }
+    if(itemAId === itemBId){
+      $('recipe-save-status').textContent = '재료 1과 재료 2는 서로 다른 아이템이어야 합니다.';
+      return;
+    }
+    const recipe = {
+      id: 'recipe_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+      itemAId: itemAId,
+      itemBId: itemBId,
+      resultItemId: resultItemId
+    };
+    const ok = await saveRecipe(recipe);
+    $('recipe-save-status').textContent = ok ? '레시피가 등록되었습니다.' : '저장에 실패했습니다.';
+    if(ok) refreshRecipeList();
   });
 
   /* ============ TAB: 캐릭터 관리 ============ */
@@ -1379,22 +1496,21 @@ const db = getFirestore(firebaseApp);
 
     const itemSlotsWrap = $('inv-item-slots');
     itemSlotsWrap.innerHTML = '';
-    for(let i=0;i<INVENTORY_MAX;i++){
-      const item = p.items[i];
-      const slot = document.createElement('div');
-      if(item){
+    if(p.items.length === 0){
+      itemSlotsWrap.innerHTML = '<p class="empty-note">보유한 아이템이 없습니다.</p>';
+    } else {
+      p.items.forEach(function(item){
         const r = resolveGeneralItem(item);
+        const slot = document.createElement('div');
         slot.className = 'item-slot';
         slot.innerHTML =
-          '<div class="el-info"><div class="el-name">'+(r.name||'이름 없음')+'</div></div>' +
-          '<button data-remove-general-item="'+item.id+'">제거</button>';
-      } else {
-        slot.className = 'item-slot empty';
-        slot.textContent = '빈 슬롯';
-      }
-      itemSlotsWrap.appendChild(slot);
+          '<div class="el-info"><div class="el-name">'+(r.name||'이름 없음')+'</div>' +
+          '<div class="el-value">x'+(item.quantity||1)+'</div></div>' +
+          '<button data-remove-general-item="'+item.sourceItemId+'">-1</button>';
+        itemSlotsWrap.appendChild(slot);
+      });
     }
-    $('btn-add-item').disabled = p.items.length >= INVENTORY_MAX;
+    $('btn-add-item').disabled = false;
 
     $('inv-help-count').textContent = '구조 요청 '+helpRequestsOf(p)+' / 2';
 
@@ -1510,11 +1626,15 @@ const db = getFirestore(firebaseApp);
   let selectedGrantItemId = null;
 
   $('inv-item-slots').addEventListener('click', async function(e){
-    const itemId = e.target.getAttribute('data-remove-general-item');
-    if(!itemId) return;
+    const sourceId = e.target.getAttribute('data-remove-general-item');
+    if(!sourceId) return;
     const p = currentInvPlayer();
     if(!p) return;
-    p.items = (p.items||[]).filter(function(i){ return i.id !== itemId; });
+    const idx = (p.items||[]).findIndex(function(i){ return i.sourceItemId === sourceId; });
+    if(idx !== -1){
+      p.items[idx].quantity = (p.items[idx].quantity||1) - 1;
+      if(p.items[idx].quantity <= 0) p.items.splice(idx, 1);
+    }
     await savePlayer(p);
     renderInventoryDetail(p.id);
   });
@@ -1564,18 +1684,22 @@ const db = getFirestore(firebaseApp);
     const p = currentInvPlayer();
     if(!p) return;
     if(!p.items) p.items = [];
-    if(p.items.length >= INVENTORY_MAX) return;
     const it = itemCatalogCache.find(function(a){ return a.id === selectedGrantItemId; });
     if(!it){
       $('inv-item-search').focus();
       return;
     }
-    p.items.push({
-      id: 'item_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
-      name: it.name,
-      description: it.description || '',
-      sourceItemId: it.id
-    });
+    const existing = p.items.find(function(i){ return i.sourceItemId === it.id; });
+    if(existing){
+      existing.quantity = (existing.quantity||1) + 1;
+    } else {
+      p.items.push({
+        sourceItemId: it.id,
+        name: it.name,
+        description: it.description || '',
+        quantity: 1
+      });
+    }
     await savePlayer(p);
     renderInventoryDetail(p.id);
   });

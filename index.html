@@ -263,20 +263,18 @@
   .drag-ghost{position:fixed;pointer-events:none;z-index:9999;opacity:.85;}
   .drop-target-hover-candidate.dropzone-hover{border-color:var(--accent);background:rgba(217,142,63,.08);}
 
-  .sub-nav{display:flex;gap:8px;margin-bottom:1.25rem;}
-  .sub-nav-btn{flex:1;}
-  .sub-nav-btn.active{background:var(--accent);color:#1a1206;border-color:var(--accent);font-weight:600;}
-  .sub-tab{display:none;}
-  .sub-tab.active{display:block;}
+  .transfer-craft-row{display:flex;gap:16px;flex-wrap:wrap;}
+  .transfer-craft-col{flex:1 1 220px;min-width:0;}
+  .tc-subtitle{font-family:'Cinzel',serif;font-size:14px;color:var(--text-dim);margin:0 0 .6rem;letter-spacing:.02em;}
 
-  .craft-row{display:flex;align-items:center;justify-content:center;gap:14px;}
+  .craft-row{display:flex;align-items:center;justify-content:center;gap:8px;}
   .craft-slot{
-    flex:1;max-width:150px;min-height:92px;border:2px dashed var(--border-strong);border-radius:10px;
-    display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;color:var(--text-mute);
-    padding:10px;cursor:pointer;
+    flex:1;min-width:0;max-width:110px;min-height:84px;border:2px dashed var(--border-strong);border-radius:10px;
+    display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;color:var(--text-mute);
+    padding:8px;cursor:pointer;
   }
-  .craft-slot.filled{border-style:solid;border-color:var(--accent);color:var(--text);font-weight:600;font-size:13px;}
-  .craft-symbol{font-size:24px;color:var(--text-mute);font-family:'Cinzel',serif;flex-shrink:0;}
+  .craft-slot.filled{border-style:solid;border-color:var(--accent);color:var(--text);font-weight:600;font-size:12px;}
+  .craft-symbol{font-size:22px;color:var(--text-mute);font-family:'Cinzel',serif;flex-shrink:0;}
 
   .skill-row{display:grid;grid-template-columns:72px 1fr;gap:14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
   .skill-row:last-child{border-bottom:none;}
@@ -356,87 +354,73 @@
       <button id="btn-logout">로그아웃</button>
     </div>
 
-    <div class="sub-nav">
-      <button class="sub-nav-btn active" data-subtab="sub-character">캐릭터</button>
-      <button class="sub-nav-btn" data-subtab="sub-craft">조합</button>
+    <div class="char-sheet-header">
+      <div class="sheet-box sheet-portrait-box">
+        <div class="portrait-frame" id="portrait-click-area">
+          <img id="pc-portrait" style="display:none;">
+          <div id="pc-portrait-placeholder" class="portrait-placeholder"></div>
+        </div>
+        <input type="file" id="pc-image-input" accept="image/*" style="display:none;">
+        <h1 class="char-sheet-name" id="pc-name"></h1>
+      </div>
+      <div class="sheet-box sheet-vitals-box">
+        <div class="vitals-row">
+          <div class="sheet-box-label">체력</div>
+          <div class="hp-visual">
+            <div class="hp-visual-bar"><div class="hp-visual-fill" id="pc-hp-fill"></div></div>
+            <div class="sheet-box-value" id="pc-hp-text"></div>
+          </div>
+        </div>
+        <div class="vitals-row">
+          <div class="sheet-box-label">구조 요청</div>
+          <div class="help-dots-row" id="pc-help-dots"></div>
+          <div class="sheet-box-value" id="pc-help-text" style="font-size:18px;"></div>
+        </div>
+      </div>
+    </div>
+    <p class="footnote" id="portrait-status" style="margin:-6px 0 1rem;"></p>
+
+    <div class="panel">
+      <div class="panel-head"><h3>능력치</h3></div>
+      <div class="element-icon-grid" id="pc-element-grid"></div>
     </div>
 
-    <div id="sub-character" class="sub-tab active">
-
-      <div class="char-sheet-header">
-        <div class="sheet-box sheet-portrait-box">
-          <div class="portrait-frame" id="portrait-click-area">
-            <img id="pc-portrait" style="display:none;">
-            <div id="pc-portrait-placeholder" class="portrait-placeholder"></div>
-          </div>
-          <input type="file" id="pc-image-input" accept="image/*" style="display:none;">
-          <h1 class="char-sheet-name" id="pc-name"></h1>
-        </div>
-        <div class="sheet-box sheet-vitals-box">
-          <div class="vitals-row">
-            <div class="sheet-box-label">체력</div>
-            <div class="hp-visual">
-              <div class="hp-visual-bar"><div class="hp-visual-fill" id="pc-hp-fill"></div></div>
-              <div class="sheet-box-value" id="pc-hp-text"></div>
-            </div>
-          </div>
-          <div class="vitals-row">
-            <div class="sheet-box-label">구조 요청</div>
-            <div class="help-dots-row" id="pc-help-dots"></div>
-            <div class="sheet-box-value" id="pc-help-text" style="font-size:18px;"></div>
-          </div>
-        </div>
-      </div>
-      <p class="footnote" id="portrait-status" style="margin:-6px 0 1rem;"></p>
-
-      <div class="panel">
-        <div class="panel-head"><h3>능력치</h3></div>
-        <div class="element-icon-grid" id="pc-element-grid"></div>
-      </div>
-
-      <div class="panel">
-        <h3 style="margin-bottom:.75rem;">보유 아티팩트</h3>
-        <div class="badges" id="pc-level-row"></div>
-        <div id="pc-skills-list"></div>
-        <div class="item-slots" id="pc-slots"></div>
-      </div>
-
-      <div class="panel">
-        <h3 style="margin-bottom:.75rem;">보유 아이템</h3>
-        <div class="item-slots" id="pc-item-slots"></div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-head"><h3>양도</h3></div>
-        <div id="transfer-dropzone" class="drop-target-hover-candidate" data-drop-role="transfer">
-          <span id="dropzone-placeholder">아티팩트나 아이템을 여기로 끌어다 놓으세요. 여러 개를 한 번에 놓을 수 있어요.</span>
-        </div>
-        <label>받을 캐릭터 이름</label>
-        <input type="text" id="transfer-target-input" placeholder="캐릭터 이름을 입력하세요">
-        <button class="primary wide" id="btn-transfer" style="margin-top:.85rem;">양도하기</button>
-        <p class="footnote" id="transfer-status"></p>
-      </div>
-
+    <div class="panel">
+      <h3 style="margin-bottom:.75rem;">보유 아티팩트</h3>
+      <div class="badges" id="pc-level-row"></div>
+      <div id="pc-skills-list"></div>
+      <div class="item-slots" id="pc-slots"></div>
     </div>
 
-    <div id="sub-craft" class="sub-tab">
+    <div class="panel">
+      <h3 style="margin-bottom:.75rem;">보유 아이템</h3>
+      <div class="item-slots" id="pc-item-slots"></div>
+    </div>
 
-      <div class="panel">
-        <div class="panel-head"><h3>아이템 조합</h3></div>
-        <div class="craft-row">
-          <div class="craft-slot drop-target-hover-candidate" data-drop-role="craft-0" id="craft-slot-0">재료 1</div>
-          <div class="craft-symbol">+</div>
-          <div class="craft-slot drop-target-hover-candidate" data-drop-role="craft-1" id="craft-slot-1">재료 2</div>
+    <div class="panel">
+      <div class="panel-head"><h3>양도 &amp; 조합</h3></div>
+      <div class="transfer-craft-row">
+        <div class="transfer-craft-col">
+          <h4 class="tc-subtitle">양도</h4>
+          <div id="transfer-dropzone" class="drop-target-hover-candidate" data-drop-role="transfer">
+            <span id="dropzone-placeholder">아티팩트나 아이템을 여기로 끌어다 놓으세요. 여러 개를 한 번에 놓을 수 있어요.</span>
+          </div>
+          <label>받을 캐릭터 이름</label>
+          <input type="text" id="transfer-target-input" placeholder="캐릭터 이름을 입력하세요">
+          <button class="primary wide" id="btn-transfer" style="margin-top:.85rem;">양도하기</button>
+          <p class="footnote" id="transfer-status"></p>
         </div>
-        <button class="primary wide" id="btn-craft" style="margin-top:1rem;">조합하기</button>
-        <p class="footnote" id="craft-status"></p>
+        <div class="transfer-craft-col">
+          <h4 class="tc-subtitle">조합</h4>
+          <div class="craft-row">
+            <div class="craft-slot drop-target-hover-candidate" data-drop-role="craft-0" id="craft-slot-0">재료 1</div>
+            <div class="craft-symbol">+</div>
+            <div class="craft-slot drop-target-hover-candidate" data-drop-role="craft-1" id="craft-slot-1">재료 2</div>
+          </div>
+          <button class="primary wide" id="btn-craft" style="margin-top:.85rem;">조합하기</button>
+          <p class="footnote" id="craft-status"></p>
+        </div>
       </div>
-
-      <div class="panel">
-        <h3 style="margin-bottom:.6rem;">보유 아이템</h3>
-        <div class="item-slots" id="craft-item-slots"></div>
-      </div>
-
     </div>
 
   </div>
@@ -706,7 +690,6 @@ const db = getFirestore(firebaseApp);
     $('login-view').style.display = 'none';
     $('char-view').style.display = 'block';
     renderPortalChar();
-    renderCraftTab();
   });
 
   $('btn-logout').addEventListener('click', function(){
@@ -735,21 +718,11 @@ const db = getFirestore(firebaseApp);
     $('login-view').style.display = 'none';
     $('char-view').style.display = 'block';
     renderPortalChar();
-    renderCraftTab();
   }
 
   function currentPortalPlayer(){
     return allPlayersCache.find(function(p){ return p.id === sessionPlayerId; });
   }
-
-  document.querySelectorAll('.sub-nav-btn').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      document.querySelectorAll('.sub-nav-btn').forEach(function(b){ b.classList.remove('active'); });
-      document.querySelectorAll('.sub-tab').forEach(function(t){ t.classList.remove('active'); });
-      btn.classList.add('active');
-      $(btn.getAttribute('data-subtab')).classList.add('active');
-    });
-  });
 
   let pendingPortraitDataUrl = null;
   let dragState = null;
@@ -820,7 +793,7 @@ const db = getFirestore(firebaseApp);
 
     stagedTransferEntries = stagedTransferEntries.filter(function(entry){
       if(entry.type === 'artifact') return p.inventory.some(function(i){ return i.id === entry.id; });
-      return p.items.some(function(i){ return i.id === entry.id; });
+      return p.items.some(function(i){ return i.sourceItemId === entry.id; });
     });
 
     const slotsWrap = $('pc-slots');
@@ -846,21 +819,22 @@ const db = getFirestore(firebaseApp);
 
     const itemSlotsWrap = $('pc-item-slots');
     itemSlotsWrap.innerHTML = '';
-    for(let i=0;i<INVENTORY_MAX;i++){
-      const item = p.items[i];
-      const slot = document.createElement('div');
-      if(item){
+    if(p.items.length === 0){
+      itemSlotsWrap.innerHTML = '<p class="empty-note">보유한 아이템이 없습니다.</p>';
+    } else {
+      p.items.forEach(function(item){
         const r = resolveGeneralItem(item);
+        const slot = document.createElement('div');
         slot.className = 'item-slot';
-        slot.innerHTML = '<div class="el-info"><div class="el-name">'+(r.name||'이름 없음')+'</div></div>';
-        makeItemDraggable(slot, {type:'item', id:item.id});
-      } else {
-        slot.className = 'item-slot empty';
-        slot.textContent = '빈 슬롯';
-      }
-      itemSlotsWrap.appendChild(slot);
+        slot.innerHTML =
+          '<div class="el-info"><div class="el-name">'+(r.name||'이름 없음')+'</div>' +
+          '<div class="el-value">x'+(item.quantity||1)+'</div></div>';
+        makeItemDraggable(slot, {type:'item', id:item.sourceItemId});
+        itemSlotsWrap.appendChild(slot);
+      });
     }
 
+    renderCraftSlotsDisplay();
     $('transfer-status').textContent = '';
     $('portrait-status').textContent = '';
     renderDropzoneChips();
@@ -885,10 +859,10 @@ const db = getFirestore(firebaseApp);
         const r = resolveItem(item);
         label = r.name || ELEMENT_NAME[r.element];
       } else {
-        const item = (p.items||[]).find(function(i){ return i.id === entry.id; });
+        const item = (p.items||[]).find(function(i){ return i.sourceItemId === entry.id; });
         if(!item) return '';
         const r = resolveGeneralItem(item);
-        label = r.name || '아이템';
+        label = (r.name || '아이템') + ' x' + (item.quantity||1);
       }
       return '<span class="drop-chip">'+label+
         '<button type="button" class="chip-remove" data-unstage-type="'+entry.type+'" data-unstage-id="'+entry.id+'">\u00d7</button></span>';
@@ -1053,12 +1027,12 @@ const db = getFirestore(firebaseApp);
     }
 
     const artifactIds = stagedTransferEntries.filter(function(e){ return e.type==='artifact'; }).map(function(e){ return e.id; });
-    const itemIds = stagedTransferEntries.filter(function(e){ return e.type==='item'; }).map(function(e){ return e.id; });
+    const itemSourceIds = stagedTransferEntries.filter(function(e){ return e.type==='item'; }).map(function(e){ return e.id; });
 
     const artifactsToMove = freshSelf.inventory.filter(function(i){ return artifactIds.indexOf(i.id) !== -1; });
-    const itemsToMove = freshSelf.items.filter(function(i){ return itemIds.indexOf(i.id) !== -1; });
+    const itemStacksToMove = freshSelf.items.filter(function(i){ return itemSourceIds.indexOf(i.sourceItemId) !== -1; });
 
-    if(artifactsToMove.length === 0 && itemsToMove.length === 0){
+    if(artifactsToMove.length === 0 && itemStacksToMove.length === 0){
       $('transfer-status').textContent = '이미 처리된 아티팩트/아이템입니다. 새로고침 후 다시 시도하세요.';
       stagedTransferEntries = [];
       renderPortalChar();
@@ -1068,18 +1042,18 @@ const db = getFirestore(firebaseApp);
       $('transfer-status').textContent = target.name+'의 아티팩트 인벤토리 공간이 부족합니다. (남은 칸: '+(INVENTORY_MAX-target.inventory.length)+')';
       return;
     }
-    if(target.items.length + itemsToMove.length > INVENTORY_MAX){
-      $('transfer-status').textContent = target.name+'의 아이템 인벤토리 공간이 부족합니다. (남은 칸: '+(INVENTORY_MAX-target.items.length)+')';
-      return;
-    }
 
     const labels = artifactsToMove.map(function(i){ const r = resolveItem(i); return r.name || ELEMENT_NAME[r.element]; })
-      .concat(itemsToMove.map(function(i){ const r = resolveGeneralItem(i); return r.name || '아이템'; }));
+      .concat(itemStacksToMove.map(function(i){ const r = resolveGeneralItem(i); return (r.name || '아이템')+' x'+(i.quantity||1); }));
 
     freshSelf.inventory = freshSelf.inventory.filter(function(i){ return artifactIds.indexOf(i.id) === -1; });
-    freshSelf.items = freshSelf.items.filter(function(i){ return itemIds.indexOf(i.id) === -1; });
+    freshSelf.items = freshSelf.items.filter(function(i){ return itemSourceIds.indexOf(i.sourceItemId) === -1; });
     target.inventory = target.inventory.concat(artifactsToMove);
-    target.items = target.items.concat(itemsToMove);
+    itemStacksToMove.forEach(function(stack){
+      const existing = target.items.find(function(i){ return i.sourceItemId === stack.sourceItemId; });
+      if(existing){ existing.quantity = (existing.quantity||1) + (stack.quantity||1); }
+      else { target.items.push(stack); }
+    });
 
     await savePlayer(freshSelf);
     await savePlayer(target);
@@ -1092,7 +1066,6 @@ const db = getFirestore(firebaseApp);
     $('transfer-target-input').value = '';
     $('transfer-status').textContent = labels.join(', ')+'을(를) '+target.name+'에게 양도했습니다.';
     renderPortalChar();
-    renderCraftTab();
   });
 
   /* ---- crafting (item + item = item) ---- */
@@ -1109,9 +1082,9 @@ const db = getFirestore(firebaseApp);
     const p = currentPortalPlayer();
     [0,1].forEach(function(idx){
       const el = $('craft-slot-'+idx);
-      const itemId = craftSlots[idx];
-      if(itemId && p){
-        const item = (p.items||[]).find(function(i){ return i.id === itemId; });
+      const sourceId = craftSlots[idx];
+      if(sourceId && p){
+        const item = (p.items||[]).find(function(i){ return i.sourceItemId === sourceId; });
         if(item){
           const r = resolveGeneralItem(item);
           el.className = 'craft-slot filled drop-target-hover-candidate';
@@ -1127,30 +1100,6 @@ const db = getFirestore(firebaseApp);
   $('craft-slot-0').addEventListener('click', function(){ craftSlots[0] = null; renderCraftSlotsDisplay(); });
   $('craft-slot-1').addEventListener('click', function(){ craftSlots[1] = null; renderCraftSlotsDisplay(); });
 
-  function renderCraftTab(){
-    const p = currentPortalPlayer();
-    if(!p) return;
-    if(!p.items) p.items = [];
-    renderCraftSlotsDisplay();
-    const wrap = $('craft-item-slots');
-    wrap.innerHTML = '';
-    for(let i=0;i<INVENTORY_MAX;i++){
-      const item = p.items[i];
-      const slot = document.createElement('div');
-      if(item){
-        const r = resolveGeneralItem(item);
-        slot.className = 'item-slot';
-        slot.innerHTML = '<div class="el-info"><div class="el-name">'+(r.name||'이름 없음')+'</div></div>';
-        makeItemDraggable(slot, {type:'item', id:item.id});
-      } else {
-        slot.className = 'item-slot empty';
-        slot.textContent = '빈 슬롯';
-      }
-      wrap.appendChild(slot);
-    }
-    $('craft-status').textContent = '';
-  }
-
   $('btn-craft').addEventListener('click', async function(){
     const p = currentPortalPlayer();
     if(!p) return;
@@ -1158,16 +1107,16 @@ const db = getFirestore(firebaseApp);
       $('craft-status').textContent = '재료 두 개를 모두 놓아주세요.';
       return;
     }
-    const item0 = (p.items||[]).find(function(i){ return i.id === craftSlots[0]; });
-    const item1 = (p.items||[]).find(function(i){ return i.id === craftSlots[1]; });
+    const catA = craftSlots[0];
+    const catB = craftSlots[1];
+    const item0 = (p.items||[]).find(function(i){ return i.sourceItemId === catA; });
+    const item1 = (p.items||[]).find(function(i){ return i.sourceItemId === catB; });
     if(!item0 || !item1){
       $('craft-status').textContent = '재료를 다시 확인해주세요.';
       craftSlots = [null,null];
-      renderCraftTab();
+      renderCraftSlotsDisplay();
       return;
     }
-    const catA = item0.sourceItemId;
-    const catB = item1.sourceItemId;
     recipesCache = await loadAllRecipes();
     const match = recipesCache.find(function(r){
       return (r.itemAId===catA && r.itemBId===catB) || (r.itemAId===catB && r.itemBId===catA);
@@ -1182,17 +1131,29 @@ const db = getFirestore(firebaseApp);
       $('craft-status').textContent = '결과 아이템 정보를 찾을 수 없습니다.';
       return;
     }
-    p.items = (p.items||[]).filter(function(i){ return i.id !== craftSlots[0] && i.id !== craftSlots[1]; });
-    p.items.push({
-      id: 'item_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
-      name: resultCatalog.name,
-      description: resultCatalog.description || '',
-      sourceItemId: resultCatalog.id
+    // 재료 1개씩 소모
+    [catA, catB].forEach(function(sourceId){
+      const idx = p.items.findIndex(function(i){ return i.sourceItemId === sourceId; });
+      if(idx !== -1){
+        p.items[idx].quantity = (p.items[idx].quantity||1) - 1;
+        if(p.items[idx].quantity <= 0) p.items.splice(idx, 1);
+      }
     });
+    // 결과물 1개 생성 (이미 있으면 수량 +1)
+    const existingResult = p.items.find(function(i){ return i.sourceItemId === resultCatalog.id; });
+    if(existingResult){
+      existingResult.quantity = (existingResult.quantity||1) + 1;
+    } else {
+      p.items.push({
+        sourceItemId: resultCatalog.id,
+        name: resultCatalog.name,
+        description: resultCatalog.description || '',
+        quantity: 1
+      });
+    }
     await savePlayer(p);
     craftSlots = [null, null];
     $('craft-status').textContent = '"'+resultCatalog.name+'"을(를) 조합했습니다!';
-    renderCraftTab();
     renderPortalChar();
   });
 
