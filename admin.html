@@ -332,6 +332,7 @@
     <button data-tab="tab-items">아이템 도감</button>
     <button data-tab="tab-inventory">캐릭터 관리</button>
     <button data-tab="tab-battle">전투 시뮬레이터</button>
+    <button data-tab="tab-logs">시스템 로그</button>
   </div>
 
   <!-- ================= TAB: 캐릭터 관리 ================= -->
@@ -545,6 +546,16 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- ================= TAB: 시스템 로그 ================= -->
+  <div id="tab-logs" class="tab">
+    <div class="panel">
+      <div class="panel-head"><h2>시스템 로그</h2><button id="btn-refresh-logs">새로고침</button></div>
+      <p class="footnote" style="margin-bottom:.6rem;">플레이어의 로그인/로그아웃, 양도, 조합, 초상화 변경, 텃밭 심기/수확 기록입니다. 최신순으로 표시됩니다.</p>
+      <input type="text" id="log-search" placeholder="캐릭터 이름으로 검색" style="margin-bottom:.75rem;">
+      <div id="system-log-list"></div>
+    </div>
   </div>
 
 </div>
@@ -778,6 +789,16 @@ const db = getFirestore(firebaseApp);
     try{ await deleteDoc(doc(db, 'recipes', id)); }catch(e){ console.error('deleteRecipe 실패:', e); }
   }
 
+  async function loadAllLogs(){
+    try{
+      const snap = await getDocs(collection(db, 'logs'));
+      const logs = [];
+      snap.forEach(function(d){ logs.push(d.data()); });
+      logs.sort(function(a,b){ return (b.timestamp||0) - (a.timestamp||0); });
+      return logs;
+    }catch(e){ console.error('loadAllLogs 실패:', e); return []; }
+  }
+
   /* ---------- nav ---------- */
 
   document.querySelectorAll('.nav button').forEach(function(btn){
@@ -790,6 +811,7 @@ const db = getFirestore(firebaseApp);
       if(btn.getAttribute('data-tab') === 'tab-items'){ refreshItemCatalogList(); refreshRecipeList(); }
       if(btn.getAttribute('data-tab') === 'tab-inventory') refreshInventoryTab();
       if(btn.getAttribute('data-tab') === 'tab-battle') refreshPartyTab();
+      if(btn.getAttribute('data-tab') === 'tab-logs') refreshLogList();
     });
   });
 
@@ -2233,6 +2255,80 @@ const db = getFirestore(firebaseApp);
       actionPanel.innerHTML = '<p class="empty-note">몬스터 턴을 진행 중입니다...</p>';
     }
   }
+
+  /* ============ TAB: 시스템 로그 ============ */
+
+  let logsCache = [];
+
+  const LOG_ACTION_COLOR = {
+    '로그인': 'var(--success)',
+    '로그아웃': 'var(--text-mute)',
+    '양도': 'var(--accent)',
+    '조합': 'var(--lightning)',
+    '초상화 변경': 'var(--frost)',
+    '씨앗 심기': 'var(--storm)',
+    '수확': 'var(--storm)'
+  };
+
+  function formatLogTime(ts){
+    if(!ts) return '';
+    const d = new Date(ts);
+    const pad = function(n){ return (n<10?'0':'')+n; };
+    return (d.getMonth()+1)+'/'+d.getDate()+' '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+  }
+
+  function formatLogDetails(entry){
+    const d = entry.details || {};
+    switch(entry.action){
+      case '양도':
+        return (d.items||[]).join(', ')+'을(를) '+(d.to||'')+'에게 양도';
+      case '조합':
+        return (d.materials||[]).join(' + ')+' \u2192 '+(d.result||'');
+      case '씨앗 심기':
+        return '텃밭 '+((d.plot!==undefined? (d.plot+1) : '?'))+'번 칸에 씨앗을 심음';
+      case '수확':
+        return '텃밭 '+((d.plot!==undefined? (d.plot+1) : '?'))+'번 칸에서 '+(d.herb||'아이템')+' 수확';
+      default:
+        return '';
+    }
+  }
+
+  async function refreshLogList(){
+    logsCache = await loadAllLogs();
+    renderLogList();
+  }
+
+  function renderLogList(){
+    const wrap = $('system-log-list');
+    wrap.innerHTML = '';
+    if(logsCache.length === 0){
+      wrap.innerHTML = '<p class="empty-note">기록된 로그가 없습니다.</p>';
+      return;
+    }
+    const query = ($('log-search').value || '').trim().toLowerCase();
+    const filtered = logsCache.filter(function(l){
+      return !query || (l.playerName||'').toLowerCase().indexOf(query) !== -1;
+    });
+    if(filtered.length === 0){
+      wrap.innerHTML = '<p class="empty-note">검색 결과가 없습니다.</p>';
+      return;
+    }
+    filtered.forEach(function(l){
+      const row = document.createElement('div');
+      row.className = 'char-row';
+      const color = LOG_ACTION_COLOR[l.action] || 'var(--text-dim)';
+      const detail = formatLogDetails(l);
+      row.innerHTML =
+        '<span class="footnote" style="min-width:88px;">'+formatLogTime(l.timestamp)+'</span>' +
+        '<span class="char-name" style="min-width:70px;">'+(l.playerName||'-')+'</span>' +
+        '<span class="badge" style="--el-color:'+color+';flex-shrink:0;">'+l.action+'</span>' +
+        '<span class="footnote" style="flex:1;">'+detail+'</span>';
+      wrap.appendChild(row);
+    });
+  }
+
+  $('log-search').addEventListener('input', renderLogList);
+  $('btn-refresh-logs').addEventListener('click', refreshLogList);
 
   /* ---------- admin password gate ---------- */
 

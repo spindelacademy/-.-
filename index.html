@@ -638,6 +638,19 @@ const db = getFirestore(firebaseApp);
     }catch(e){ console.error('loadAllRecipes 실패:', e); return []; }
   }
 
+  async function logAction(playerName, action, details){
+    try{
+      const entry = {
+        id: 'log_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+        timestamp: Date.now(),
+        playerName: playerName || '',
+        action: action,
+        details: details || {}
+      };
+      await setDoc(doc(db, 'logs', entry.id), entry);
+    }catch(e){ console.error('logAction 실패:', e); }
+  }
+
   let artifactCatalogCache = [];
   let allPlayersCache = [];
   let itemCatalogCache = [];
@@ -690,15 +703,18 @@ const db = getFirestore(firebaseApp);
     $('login-view').style.display = 'none';
     $('char-view').style.display = 'block';
     renderPortalChar();
+    logAction(match.name, '로그인', {});
   });
 
   $('btn-logout').addEventListener('click', function(){
+    const outgoingName = currentPortalPlayer() ? currentPortalPlayer().name : '';
     sessionPlayerId = null;
     try{ localStorage.removeItem(SESSION_KEY); }catch(e){}
     $('login-name').value = '';
     $('login-password').value = '';
     $('char-view').style.display = 'none';
     $('login-view').style.display = 'block';
+    if(outgoingName) logAction(outgoingName, '로그아웃', {});
   });
 
   async function tryPortalAutoLogin(){
@@ -996,6 +1012,7 @@ const db = getFirestore(firebaseApp);
           p.imageUrl = pendingPortraitDataUrl;
           const ok = await savePlayer(p);
           $('portrait-status').textContent = ok ? '초상화가 저장되었습니다.' : '저장에 실패했습니다.';
+          if(ok) logAction(p.name, '초상화 변경', {});
         }
       };
       img.src = ev.target.result;
@@ -1065,6 +1082,7 @@ const db = getFirestore(firebaseApp);
     stagedTransferEntries = [];
     $('transfer-target-input').value = '';
     $('transfer-status').textContent = labels.join(', ')+'을(를) '+target.name+'에게 양도했습니다.';
+    logAction(freshSelf.name, '양도', { to: target.name, items: labels });
     renderPortalChar();
   });
 
@@ -1154,6 +1172,10 @@ const db = getFirestore(firebaseApp);
     await savePlayer(p);
     craftSlots = [null, null];
     $('craft-status').textContent = '"'+resultCatalog.name+'"을(를) 조합했습니다!';
+    logAction(p.name, '조합', {
+      materials: [resolveGeneralItem(item0).name || '아이템', resolveGeneralItem(item1).name || '아이템'],
+      result: resultCatalog.name
+    });
     renderPortalChar();
   });
 

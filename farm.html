@@ -232,6 +232,19 @@ const db = getFirestore(firebaseApp);
     }catch(e){ console.error('loadAllItemCatalog 실패:', e); return []; }
   }
 
+  async function logAction(playerName, action, details){
+    try{
+      const entry = {
+        id: 'log_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+        timestamp: Date.now(),
+        playerName: playerName || '',
+        action: action,
+        details: details || {}
+      };
+      await setDoc(doc(db, 'logs', entry.id), entry);
+    }catch(e){ console.error('logAction 실패:', e); }
+  }
+
   function emptyBoard(){
     const arr = [];
     for(let i=0;i<BOARD_SIZE;i++) arr.push({ state:'empty' });
@@ -423,6 +436,7 @@ const db = getFirestore(firebaseApp);
       });
       await loadBoard();
       showStatus('씨앗을 심었습니다.');
+      logAction(currentPlayer.name, '씨앗 심기', { plot: idx });
     }catch(e){
       if(e.message === 'OCCUPIED') showStatus('이미 다른 씨앗이 심겨 있습니다.');
       else { console.error(e); showStatus('오류가 발생했습니다. 다시 시도해주세요.'); }
@@ -461,6 +475,7 @@ const db = getFirestore(firebaseApp);
       await loadBoard();
       updateHerbCount();
       showStatus(HERB_NAME+'을(를) 수확했습니다!');
+      logAction(currentPlayer.name, '수확', { plot: idx, herb: HERB_NAME });
     }catch(e){
       if(e.message === 'NOT_READY') showStatus('아직 수확할 수 없습니다.');
       else { console.error(e); showStatus('오류가 발생했습니다. 다시 시도해주세요.'); }
