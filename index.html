@@ -719,7 +719,7 @@ function nameToEmail(name){
 
   /* ---------- 서버 함수 (Netlify Functions) 호출 ---------- */
   /* admin.html과 같은 Netlify 사이트에 배포된 함수 주소로 바꿔주세요. */
-  const FUNCTIONS_BASE = 'https://spindelacademy-admin.netlify.app/.netlify/functions';
+  const FUNCTIONS_BASE = 'https://steady-beignet-d6e4ca.netlify.app/.netlify/functions';
 
   async function callServerFunction(name, payload){
     if(!auth.currentUser) return { success:false, message:'로그인이 필요합니다.' };
